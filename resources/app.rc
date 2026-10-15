@@ -1,0 +1,3 @@
+// Embeds the "run as administrator" manifest (MinGW / windres builds).
+// MSVC builds use the /MANIFESTUAC linker option from CMakeLists.txt instead.
+1 24 "app.manifest"
