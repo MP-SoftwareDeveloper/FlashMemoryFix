@@ -1,0 +1,2 @@
+// Application icon shown by Explorer, the taskbar and Alt+Tab.
+IDI_APPICON ICON "app.ico"

@@ -4,6 +4,7 @@ project(FlashMemoryFix VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
 
 option(FLASHFIX_REQUIRE_ADMIN "Windows: ask for administrator rights at start (needed to format)" ON)
 option(FLASHFIX_BUILD_TESTS "Build the unit tests" ON)
@@ -47,9 +48,17 @@ qt_add_executable(FlashMemoryFix WIN32
     src/ui/filecopier.cpp
     src/ui/helpdialog.h
     src/ui/helpdialog.cpp
+    resources/resources.qrc
 )
 target_include_directories(FlashMemoryFix PRIVATE src)
 target_link_libraries(FlashMemoryFix PRIVATE Qt6::Widgets ffcore)
+
+# Icon of the .exe file (always, independent of the admin manifest below)
+if(WIN32)
+    target_sources(FlashMemoryFix PRIVATE resources/icon.rc)
+    set_source_files_properties(resources/icon.rc PROPERTIES OBJECT_DEPENDS
+        ${CMAKE_CURRENT_SOURCE_DIR}/resources/app.ico)
+endif()
 
 if(WIN32 AND FLASHFIX_REQUIRE_ADMIN)
     if(MSVC)
