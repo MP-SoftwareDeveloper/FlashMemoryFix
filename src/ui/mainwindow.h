@@ -34,6 +34,8 @@ private slots:
     void onClearReadOnly();
     void onFormat();
     void saveLog();
+    void showHelp();
+    void showAbout();
     void onRunnerFinished(bool ok);
     void onCopyFinished(bool ok, const QString &summary);
     void pollVolume();

@@ -1,13 +1,17 @@
 #include "mainwindow.h"
 
 #include <QCheckBox>
+#include <QCoreApplication>
 #include <QDateTime>
+#include <QAction>
 #include <QDir>
 #include <QFileDialog>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QLabel>
+#include <QMenu>
+#include <QMenuBar>
 #include <QMessageBox>
 #include <QPlainTextEdit>
 #include <QProgressBar>
@@ -25,6 +29,7 @@
 #include "diskpartrunner.h"
 #include "filecopier.h"
 #include "formatdialog.h"
+#include "helpdialog.h"
 #include "storage.h"
 
 #ifdef Q_OS_WIN
@@ -125,9 +130,11 @@ void MainWindow::buildUi()
     auto *top = new QHBoxLayout;
     refreshBtn_ = new QPushButton(tr("Refresh"));
     showAll_ = new QCheckBox(tr("Also show internal disks (view only)"));
+    auto *helpBtn = new QPushButton(tr("Help (F1)"));
     top->addWidget(refreshBtn_);
     top->addWidget(showAll_);
     top->addStretch();
+    top->addWidget(helpBtn);
     root->addLayout(top);
 
     auto *split = new QSplitter(Qt::Vertical);
@@ -143,6 +150,10 @@ void MainWindow::buildUi()
     table_->horizontalHeader()->setStretchLastSection(true);
     table_->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     table_->setMinimumHeight(130);
+    // Light-green highlight for the selected device (also when the window is not focused).
+    table_->setStyleSheet(QStringLiteral(
+        "QTableWidget::item:selected, QTableWidget::item:selected:!active {"
+        "  background-color: #b7efc5; color: #0b3d1a; }"));
     split->addWidget(table_);
 
     // --- details + partitions ---
@@ -196,12 +207,20 @@ void MainWindow::buildUi()
 
     setCentralWidget(central);
 
+    // Help menu
+    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
+    QAction *howTo = helpMenu->addAction(tr("&How to use"), this, &MainWindow::showHelp);
+    howTo->setShortcut(QKeySequence::HelpContents);  // F1
+    helpMenu->addSeparator();
+    helpMenu->addAction(tr("&About Flash Memory Fix"), this, &MainWindow::showAbout);
+
     progress_ = new QProgressBar;
     progress_->setRange(0, 0);
     progress_->setMaximumWidth(160);
     progress_->hide();
     statusBar()->addPermanentWidget(progress_);
 
+    connect(helpBtn, &QPushButton::clicked, this, &MainWindow::showHelp);
     connect(refreshBtn_, &QPushButton::clicked, this, &MainWindow::refresh);
     connect(showAll_, &QCheckBox::toggled, this, [this] { refresh(); });
     connect(table_, &QTableWidget::itemSelectionChanged, this, &MainWindow::onSelectionChanged);
@@ -626,6 +645,24 @@ void MainWindow::appendLog(const QString &text)
     c.insertText(t);
     log_->setTextCursor(c);
     log_->ensureCursorVisible();
+}
+
+void MainWindow::showHelp()
+{
+    HelpDialog dlg(this);
+    dlg.exec();
+}
+
+void MainWindow::showAbout()
+{
+    QMessageBox::about(
+        this, tr("About Flash Memory Fix"),
+        tr("<b>Flash Memory Fix</b> %1<br><br>"
+           "Finds USB sticks and SD cards and repairs them: clean, partition and format "
+           "(FAT32, exFAT, NTFS).<br><br>"
+           "Built with C++ and Qt %2. Devices are read with the Windows API; cleaning and formatting "
+           "use diskpart.<br><br>Press F1 for help.")
+            .arg(QCoreApplication::applicationVersion(), QString::fromLatin1(qVersion())));
 }
 
 void MainWindow::saveLog()

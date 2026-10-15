@@ -45,6 +45,8 @@ qt_add_executable(FlashMemoryFix WIN32
     src/ui/diskpartrunner.cpp
     src/ui/filecopier.h
     src/ui/filecopier.cpp
+    src/ui/helpdialog.h
+    src/ui/helpdialog.cpp
 )
 target_include_directories(FlashMemoryFix PRIVATE src)
 target_link_libraries(FlashMemoryFix PRIVATE Qt6::Widgets ffcore)
